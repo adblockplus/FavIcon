@@ -18,6 +18,22 @@
 import Foundation
 import FavIcon.XMLDocument
 
+/// Represents an icon size.
+struct IconSize : Hashable, Equatable {
+  var hashValue: Int {
+    return width.hashValue ^ height.hashValue
+  }
+  
+  static func ==(lhs: IconSize, rhs: IconSize) -> Bool {
+    return lhs.width == rhs.width && lhs.height == rhs.height
+  }
+  
+  /// The width of the icon.
+  let width: Int
+  /// The height of the icon.
+  let height: Int
+}
+
 private let kRelIconTypeMap: [IconSize: DetectedIconType] = [
     IconSize(width: 16, height: 16): .classic,
     IconSize(width: 32, height: 32): .appleOSXSafariTab,
@@ -46,6 +62,74 @@ private let siteImage: [String: IconSize] = [
 /// - parameter returns: An array of `DetectedIcon` structures.
 // swiftlint:disable function_body_length
 // swiftlint:disable cyclomatic_complexity
+func examineHTMLMeta(_ document: HTMLDocument, baseURL: URL) -> [String:String] {
+  var resp: [String:String] = [:]
+  for meta in document.query("/html/head/meta") {
+    if let name = meta.attributes["name"]?.lowercased(),
+      let content = meta.attributes["content"]{
+      switch name {
+      case "og:url":
+        resp["og:url"] = content;
+        break
+      case "og:description":
+        resp["description"] = content;
+        break
+      case "description":
+        resp["description"] = resp["description"] ?? content;
+        break
+      case "og:image":
+        resp["image"] = content;
+        break
+      case "og:title":
+        resp["title"] = content;
+        break
+      case "og:site_name":
+        resp["site_name"] = content;
+        break
+      default:
+        break
+      }
+    }
+  }
+  
+  for title in document.query("/html/head/title") {
+    if let titleString = title.attributes[""] {
+      resp["title"] = resp["title"] ?? titleString;
+    }
+  }
+  
+  for link in document.query("/html/head/link") {
+    if let rel = link.attributes["rel"],
+      let href = link.attributes["href"],
+      let url = URL(string: href, relativeTo: baseURL),
+      let application = link.attributes["application"]{
+        switch rel.lowercased() {
+        case "canonical":
+          resp["canonical"] = url.absoluteString;
+          break
+        case "amphtml":
+          resp["amphtml"] = url.absoluteString;
+          break
+        case "search":
+          resp["search"] = url.absoluteString;
+          break
+        case "fluid-icon":
+          resp["fluid-icon"] = url.absoluteString;
+          break
+        case "alternate":
+          if application == "application/atom+xml" {
+            resp["atom"] = url.absoluteString;
+          }
+          break
+        default:
+          break
+      }
+    }
+  }
+      
+  return resp;
+}
+
 func extractHTMLHeadIcons(_ document: HTMLDocument, baseURL: URL) -> [DetectedIcon] {
     var icons: [DetectedIcon] = []
 
@@ -227,19 +311,11 @@ func extractBrowserConfigURL(_ document: HTMLDocument, baseURL: URL) -> (url: UR
     return (url: nil, disabled: false)
 }
 
-/// Represents an icon size.
-struct IconSize {
-    /// The width of the icon.
-    let width: Int
-    /// The height of the icon.
-    let height: Int
-}
-
 /// Helper function for parsing a W3 `sizes` attribute value.
 ///
 /// - parameter string: If not `nil`, the value of the attribute to parse (e.g. `50x50 144x144`).
 /// - returns: An array of `IconSize` structs for each size found.
-private func parseHTMLIconSizes(_ string: String?) -> [IconSize] {
+func parseHTMLIconSizes(_ string: String?) -> [IconSize] {
     var sizes: [IconSize] = []
     if let string = string?.lowercased(), string != "any" {
         for size in string.components(separatedBy: .whitespaces) {
@@ -251,14 +327,4 @@ private func parseHTMLIconSizes(_ string: String?) -> [IconSize] {
         }
     }
     return sizes
-}
-
-extension IconSize : Hashable {
-    var hashValue: Int {
-        return width.hashValue ^ height.hashValue
-    }
-}
-
-func == (lhs: IconSize, rhs: IconSize) -> Bool {
-    return lhs.width == rhs.width && lhs.height == rhs.height
 }

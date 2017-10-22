@@ -58,14 +58,14 @@ enum URLRequestError: Error {
 
 /// Base class for performing URL requests in the context of an `NSOperation`.
 class URLRequestOperation: Operation {
-    var urlRequest: URLRequest
+    @objc var urlRequest: URLRequest
     var result: URLResult?
 
     fileprivate var task: URLSessionDataTask?
     fileprivate let session: URLSession
     fileprivate var semaphore: DispatchSemaphore?
 
-    init(url: URL, session: URLSession) {
+    @objc init(url: URL, session: URLSession) {
         self.session = session
         self.urlRequest = URLRequest(url: url)
         self.semaphore = nil
@@ -86,7 +86,7 @@ class URLRequestOperation: Operation {
         }
     }
 
-    func prepareRequest() {
+    @objc func prepareRequest() {
     }
 
     func processResult(_ data: Data?, response: HTTPURLResponse, completion: @escaping (URLResult) -> Void) {

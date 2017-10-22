@@ -40,9 +40,9 @@
 /// Represents a detected icon.
 @objc public class DetectedIcon : NSObject {
     /// The absolute URL for the icon file.
-    public let url: URL
+    @objc public let url: URL
     /// The type of the icon.
-    public let type: DetectedIconType
+    @objc public let type: DetectedIconType
     /// The width of the icon, if known, in pixels.
     public let width: Int?
     /// The height of the icon, if known, in pixels.

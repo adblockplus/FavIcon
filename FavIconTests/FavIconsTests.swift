@@ -33,7 +33,7 @@ class FavIconTests: XCTestCase {
 
         performWebRequest(name: "scan") { requestCompleted in
             do {
-                try FavIcon.scan("https://apple.com") { icons in
+                try FavIcon.scan("https://apple.com") { icons, meta in
                     actualIcons = icons
                     requestCompleted()
                 }
