@@ -51,8 +51,8 @@ private let kMicrosoftSizeMap: [String: IconSize] = [
 ]
 
 private let siteImage: [String: IconSize] = [
-  "og:image": IconSize(width: 450, height: 450),
-  "twitter:image": IconSize(width: 449, height: 449)
+  "og:image": IconSize(width: 1024, height: 512),
+  "twitter:image": IconSize(width: 1024, height: 512)
 ]
 
 /// Extracts a list of icons from the `<head>` section of an HTML document.
@@ -156,6 +156,8 @@ func extractHTMLHeadIcons(_ document: HTMLDocument, baseURL: URL) -> [DetectedIc
                     } else {
                         icons.append(DetectedIcon(url: url.absoluteURL, type: .classic))
                     }
+                } else {
+                  icons.append(DetectedIcon(url: url.absoluteURL, type: .classic))
                 }
             case "apple-touch-icon":
                 let sizes = parseHTMLIconSizes(link.attributes["sizes"])
