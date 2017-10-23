@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic) NSString *name;
 @property (readonly, nonatomic) NSDictionary<NSString *, NSString *> *attributes;
 @property (readonly, nonatomic) NSArray<HTMLElement *> *children;
+@property (nullable, readonly, nonatomic) NSString *contents;
 
 @end
 
@@ -42,3 +43,4 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+

@@ -36,6 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
   NSString *_name;
   NSDictionary *_attributes;
   NSArray *_children;
+  NSString * _contents;
 }
 
 - (instancetype)initWithDocument:(HTMLDocument *)document node:(htmlNodePtr)node {
@@ -51,6 +52,17 @@ NS_ASSUME_NONNULL_BEGIN
     _name = [NSString stringWithUTF8String:(const char *)_htmlNode->name];
   }
   return _name;
+}
+
+- (nullable NSString *) contents {
+  if (!_contents) {
+    char *nodeContent = (char *)_htmlNode->content;
+    if (nodeContent) {
+      _contents = [NSString stringWithUTF8String:nodeContent];
+      xmlFree(nodeContent);
+    }
+  }
+  return _contents;
 }
 
 - (NSDictionary<NSString *,NSString *> *)attributes {
@@ -100,82 +112,83 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @implementation HTMLDocument {
-    htmlDocPtr _htmlDocument;
-    NSArray *_children;
+  htmlDocPtr _htmlDocument;
+  NSArray *_children;
 }
 
 - (instancetype)initWithData:(NSData *)data {
-    if (self = [super init]) {
-        _htmlDocument = htmlReadMemory(
-            data.bytes,
-            (int)data.length,
-            "",
-            NULL,
-            HTML_PARSE_NOWARNING | HTML_PARSE_NOERROR);
-    }
-    return self;
+  if (self = [super init]) {
+    _htmlDocument = htmlReadMemory(
+                                   data.bytes,
+                                   (int)data.length,
+                                   "",
+                                   NULL,
+                                   HTML_PARSE_NOWARNING | HTML_PARSE_NOERROR);
+  }
+  return self;
 }
 
 - (void)dealloc {
-    if (_htmlDocument) {
-        xmlFreeDoc(_htmlDocument);
-    }
+  if (_htmlDocument) {
+    xmlFreeDoc(_htmlDocument);
+  }
 }
 
 - (instancetype)initWithString:(NSString *)string {
-    self = [self initWithData:[string dataUsingEncoding:NSUTF8StringEncoding]];
-    return self;
+  self = [self initWithData:[string dataUsingEncoding:NSUTF8StringEncoding]];
+  return self;
 }
 
 - (NSArray<HTMLElement *> *)children {
-    if (!_children) {
-        NSMutableArray *children = [NSMutableArray array];
-        
-        xmlNodePtr currentChild = _htmlDocument->children;
-        while (currentChild) {
-            if (currentChild->type == XML_ELEMENT_NODE) {
-                [children addObject:[[HTMLElement alloc] initWithDocument:self node:currentChild]];
-            }
-            currentChild = currentChild->next;
-        }
-        
-        _children = children;
+  if (!_children) {
+    NSMutableArray *children = [NSMutableArray array];
+    
+    xmlNodePtr currentChild = _htmlDocument->children;
+    while (currentChild) {
+      if (currentChild->type == XML_ELEMENT_NODE) {
+        [children addObject:[[HTMLElement alloc] initWithDocument:self node:currentChild]];
+      }
+      currentChild = currentChild->next;
     }
     
-    return _children;
+    _children = children;
+  }
+  
+  return _children;
 }
 
 - (NSArray<HTMLElement *> *)query:(NSString *)xpath {
-    NSMutableArray *results = [NSMutableArray array];
-    
-    xmlXPathContextPtr context = xmlXPathNewContext(_htmlDocument);
-    if (!context) {
-        return results;
-    }
-    
-    xmlXPathObjectPtr object = xmlXPathEvalExpression((const xmlChar *)[xpath UTF8String], context);
-    if (!object) {
-        xmlXPathFreeContext(context);
-        return results;
-    }
-    
-    if (!object->nodesetval) {
-        xmlXPathFreeObject(object);
-        xmlXPathFreeContext(context);
-        return results;
-    }
-    
-    for (int i = 0; i < object->nodesetval->nodeNr; i++) {
-        xmlNodePtr node = object->nodesetval->nodeTab[i];
-        [results addObject:[[HTMLElement alloc] initWithDocument:self node:node]];
-    }
-    
+  NSMutableArray *results = [NSMutableArray array];
+  
+  xmlXPathContextPtr context = xmlXPathNewContext(_htmlDocument);
+  if (!context) {
+    return results;
+  }
+  
+  xmlXPathObjectPtr object = xmlXPathEvalExpression((const xmlChar *)[xpath UTF8String], context);
+  if (!object) {
+    xmlXPathFreeContext(context);
+    return results;
+  }
+  
+  if (!object->nodesetval) {
     xmlXPathFreeObject(object);
     xmlXPathFreeContext(context);
-    
     return results;
+  }
+  
+  for (int i = 0; i < object->nodesetval->nodeNr; i++) {
+    xmlNodePtr node = object->nodesetval->nodeTab[i];
+    [results addObject:[[HTMLElement alloc] initWithDocument:self node:node]];
+  }
+  
+  xmlXPathFreeObject(object);
+  xmlXPathFreeContext(context);
+  
+  return results;
 }
 
 @end
 
 NS_ASSUME_NONNULL_END
+
