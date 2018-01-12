@@ -42,12 +42,12 @@ class FavIconTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(1, actualIcons.count)
+        XCTAssertEqual(3, actualIcons.count)
         XCTAssertEqual(URL(string: "https://www.apple.com/favicon.ico")!, actualIcons[0].url)
     }
 
     func testDownloading() {
-        var actualResults: [IconDownloadResult] = []
+        var actualResults: [ImageType] = []
 
         performWebRequest(name: "download") { requestCompleted in
             do {
@@ -60,17 +60,11 @@ class FavIconTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(1, actualResults.count)
+        XCTAssertEqual(3, actualResults.count)
 
-        switch actualResults[0] {
-        case .success(let image):
-            XCTAssertEqual(32, image.size.width)
-            XCTAssertEqual(32, image.size.height)
-            break
-        case .failure(let error):
-            XCTFail("unexpected error returned for download: \(error)")
-            break
-        }
+        let firstImage = actualResults[0]
+        XCTAssertEqual(1200, firstImage.size.width)
+        XCTAssertEqual(630, firstImage.size.height)
     }
 
     func testChooseIcon() {
