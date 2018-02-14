@@ -33,7 +33,7 @@ class FavIconTests: XCTestCase {
 
         performWebRequest(name: "scan") { requestCompleted in
             do {
-                try FavIcon.scan("https://apple.com") { icons, meta in
+                try FavIcon.scan("https://apple.com") { icons, _ in
                     actualIcons = icons
                     requestCompleted()
                 }
@@ -62,9 +62,9 @@ class FavIconTests: XCTestCase {
 
         XCTAssertEqual(3, actualResults.count)
 
-        let firstImage = actualResults[0]
-        XCTAssertEqual(1200, firstImage.size.width)
-        XCTAssertEqual(630, firstImage.size.height)
+        let firstImage = actualResults[1]
+        XCTAssertEqual(64, firstImage.size.width)
+        XCTAssertEqual(64, firstImage.size.height)
     }
 
     func testChooseIcon() {
