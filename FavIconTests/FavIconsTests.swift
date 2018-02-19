@@ -47,18 +47,16 @@ class FavIconTests: XCTestCase {
     }
 
     func testDownloading() {
-        var actualResults: [IconDownloadResult] = []
 
+        guard let url = URL(string: "https://apple.com") else {
+            XCTFail("Invalid url")
+            return
+        }
+        var actualResults: [IconDownloadResult] = []
         performWebRequest(name: "download") { requestCompleted in
-            do {
-                try FavIcon.downloadAll("https://apple.com") { results in
-                    for result in results {
-                        actualResults.append(.success(image: result))
-                    }
-                    requestCompleted()
-                }
-            } catch let error {
-                XCTFail("failed to download icons: \(error)")
+            FavIcon.downloadAll(url) { results in
+                actualResults = results
+                requestCompleted()
             }
         }
 
@@ -68,9 +66,9 @@ class FavIconTests: XCTestCase {
         // Test that the favicons height & width are of equal ratio
         for result in actualResults {
             switch result {
-            case .success(let image):
+            case let .success(image):
                 XCTAssertEqual(image.size.width, image.size.height)
-            case .failure(let error):
+            case let .failure(error):
                 XCTFail("unexpected error returned for download: \(error)")
             }
         }

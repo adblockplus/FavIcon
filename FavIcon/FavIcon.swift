@@ -167,18 +167,18 @@ public enum IconDownloadResult {
     /// - parameter completion: A closure to call when all download tasks have
     ///                         results available (successful or otherwise). The closure
     ///                         will be called on the main queue.
-    @objc public static func download(_ icons: [DetectedIcon], completion: @escaping ([ImageType]) -> Void) {
+    public static func download(_ icons: [DetectedIcon], completion: @escaping ([IconDownloadResult]) -> Void) {
         let urlSession = urlSessionProvider()
         let operations: [DownloadImageOperation] =
             icons.map { DownloadImageOperation(url: $0.url, session: urlSession) }
 
         executeURLOperations(operations) { results in
-            let downloadResults: [ImageType] = results.flatMap { result in
+            let downloadResults: [IconDownloadResult] = results.flatMap { result in
                 switch result {
                 case .imageDownloaded(_, let image):
-                  return image;
-                case .failed(_):
-                  return nil;
+                  return .success(image: image);
+                case .failed(let error):
+                  return .failure(error: error);
                 default:
                   return nil;
                 }
@@ -196,7 +196,7 @@ public enum IconDownloadResult {
     /// - parameter url: The URL to scan for icons.
     /// - parameter completion: A closure to call when all download tasks have results available
     ///                         (successful or otherwise). The closure will be called on the main queue.
-    @objc public static func downloadAll(_ url: URL, completion: @escaping ([ImageType]) -> Void) {
+    public static func downloadAll(_ url: URL, completion: @escaping ([IconDownloadResult]) -> Void) {
         scan(url) { icons, meta in
             download(icons, completion: completion)
         }
@@ -363,10 +363,10 @@ extension FavIcon {
     /// - parameter completion: A closure to call when all download tasks have results available
     ///                         (successful or otherwise). The closure will be called on the main queue.
     /// - throws: An `IconError` if the scan or download failed for some reason.
-    @objc public static func downloadAll(_ url: String, completion: @escaping ([ImageType]) -> Void) throws {
-        guard let url = URL(string: url) else { throw IconError.invalidBaseURL }
-        downloadAll(url, completion: completion)
-    }
+//    @objc public static func downloadAll(_ url: String, completion: @escaping ([ImageType]) -> Void) throws {
+//        guard let url = URL(string: url) else { throw IconError.invalidBaseURL }
+//        downloadAll(url, completion: completion)
+//    }
 
     /// Convenience overload for `downloadPreferred(url:width:height:completion:)` that takes a `String`
     /// instead of a `URL` as the URL parameter. Throws an error if the URL is not a valid URL.
