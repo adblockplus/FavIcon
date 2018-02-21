@@ -15,6 +15,8 @@
 // limitations under the License.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 
 #if os(iOS)
@@ -43,7 +45,8 @@ public enum IconDownloadResult {
 }
 
 /// Responsible for detecting all of the different icons supported by a given site.
-@objc public final class FavIcon : NSObject {
+@objc
+public final class FavIcon: NSObject {
 
     // swiftlint:disable function_body_length
 
@@ -65,13 +68,14 @@ public enum IconDownloadResult {
     /// - parameter url: The base URL to scan.
     /// - parameter completion: A closure to call when the scan has completed. The closure will be call
     ///                         on the main queue.
-    @objc public static func scan(_ url: URL, completion: @escaping ([DetectedIcon], [String:String]) -> Void) {
+    @objc
+    public static func scan(_ url: URL, completion: @escaping ([DetectedIcon], [String: String]) -> Void) {
         let queue = DispatchQueue(label: "org.bitserf.FavIcon", attributes: [])
         var icons: [DetectedIcon] = []
         var additionalDownloads: [URLRequestWithCallback] = []
         let urlSession = urlSessionProvider()
-        var meta: [String:String] = [:]
-      
+        var meta: [String: String] = [:]
+
         let downloadHTMLOperation = DownloadTextOperation(url: url, session: urlSession)
         let downloadHTML = urlRequestOperation(downloadHTMLOperation) { result in
             if case let .textDownloaded(actualURL, text, contentType) = result {
@@ -87,7 +91,7 @@ public enum IconDownloadResult {
 
                     for manifestURL in extractWebAppManifestURLs(document, baseURL: url) {
                         let downloadOperation = DownloadTextOperation(url: manifestURL,
-                                                                              session: urlSession)
+                                                                      session: urlSession)
                         let download = urlRequestOperation(downloadOperation) { result in
                             if case .textDownloaded(_, let manifestJSON, _) = result {
                                 let jsonIcons = extractManifestJSONIcons(
@@ -124,7 +128,6 @@ public enum IconDownloadResult {
             }
         }
 
-
         let favIconURL = URL(string: "/favicon.ico", relativeTo: url as URL)!.absoluteURL
         let checkFavIconOperation = CheckURLExistsOperation(url: favIconURL, session: urlSession)
         let checkFavIcon = urlRequestOperation(checkFavIconOperation) { result in
@@ -134,7 +137,7 @@ public enum IconDownloadResult {
                 }
             }
         }
-      
+
         let touchIconURL = URL(string: "/apple-touch-icon.png", relativeTo: url as URL)!.absoluteURL
         let checkTouchIconOperation = CheckURLExistsOperation(url: touchIconURL, session: urlSession)
         let checkTouchIcon = urlRequestOperation(checkTouchIconOperation) { result in
@@ -167,7 +170,8 @@ public enum IconDownloadResult {
     /// - parameter completion: A closure to call when all download tasks have
     ///                         results available (successful or otherwise). The closure
     ///                         will be called on the main queue.
-    @objc public static func download(_ icons: [DetectedIcon], completion: @escaping ([ImageType]) -> Void) {
+    @objc
+    public static func download(_ icons: [DetectedIcon], completion: @escaping ([ImageType]) -> Void) {
         let urlSession = urlSessionProvider()
         let operations: [DownloadImageOperation] =
             icons.map { DownloadImageOperation(url: $0.url, session: urlSession) }
@@ -176,11 +180,11 @@ public enum IconDownloadResult {
             let downloadResults: [ImageType] = results.flatMap { result in
                 switch result {
                 case .imageDownloaded(_, let image):
-                  return image;
-                case .failed(_):
-                  return nil;
+                  return image
+                case .failed:
+                  return nil
                 default:
-                  return nil;
+                  return nil
                 }
             }
 
@@ -196,8 +200,9 @@ public enum IconDownloadResult {
     /// - parameter url: The URL to scan for icons.
     /// - parameter completion: A closure to call when all download tasks have results available
     ///                         (successful or otherwise). The closure will be called on the main queue.
-    @objc public static func downloadAll(_ url: URL, completion: @escaping ([ImageType]) -> Void) {
-        scan(url) { icons, meta in
+    @objc
+    public static func downloadAll(_ url: URL, completion: @escaping ([ImageType]) -> Void) {
+        scan(url) { icons, _ in
             download(icons, completion: completion)
         }
     }
@@ -213,14 +218,15 @@ public enum IconDownloadResult {
     /// - parameter completion: A closure to call when the download task has produced results. The closure will
     ///                         be called on the main queue.
     /// - throws: An appropriate `IconError` if downloading was not successful.
-    @objc public static func downloadPreferred(_ url: URL,
+    @objc
+    public static func downloadPreferred(_ url: URL,
                                          width: Int,
                                          height: Int,
                                          completion: @escaping (ImageType?) -> Void) {
-        scan(url) { icons, meta in
+        scan(url) { icons, _ in
             guard let icon = chooseIcon(icons, width: width, height: height) else {
                 DispatchQueue.main.async {
-                  completion(ImageType());
+                  completion(ImageType())
                 }
                 return
             }
@@ -232,11 +238,11 @@ public enum IconDownloadResult {
                 let downloadResults: [ImageType] = results.flatMap { result in
                     switch result {
                     case let .imageDownloaded(_, image):
-                      return image;
-                    case .failed(_):
-                      return nil;
+                      return image
+                    case .failed:
+                      return nil
                     default:
-                      return nil;
+                      return nil
                     }
                 }
 
@@ -246,42 +252,45 @@ public enum IconDownloadResult {
             }
         }
     }
-  
-  @objc public static func chooseLargestIconSmallerThan(_ icons: [DetectedIcon], width: Int, height: Int) -> DetectedIcon? {
-    var filteredIcons = icons;
-    if (width > 0 && height > 0) {
-      filteredIcons = icons.filter { (icon) -> Bool in
+
+    @objc
+    public static func chooseLargestIconSmallerThan(_ icons: [DetectedIcon], width: Int, height: Int) -> DetectedIcon? {
+    var filteredIcons = icons
+    if width > 0 && height > 0 {
+      filteredIcons = icons.filter { icon -> Bool in
         if let iconWidth = icon.width,
            let iconHeight = icon.height {
-          return iconWidth <= width  && iconHeight <= height;
+          return iconWidth <= width && iconHeight <= height
         } else { return true; }
       }
     }
-    return chooseIcon(filteredIcons, width: 0, height: 0);
+    return chooseIcon(filteredIcons, width: 0, height: 0)
 
   }
-  
-  @objc public static func choseIconLargerThan(_ icons: [DetectedIcon], width: Int, height: Int) -> DetectedIcon? {
-    var filteredIcons = icons;
-    if (width > 0 && height > 0) {
-      filteredIcons = icons.filter { (icon) -> Bool in
+
+    @objc
+    public static func choseIconLargerThan(_ icons: [DetectedIcon], width: Int, height: Int) -> DetectedIcon? {
+    var filteredIcons = icons
+    if width > 0 && height > 0 {
+      filteredIcons = icons.filter { icon -> Bool in
         if let iconWidth = icon.width,
           let iconHeight = icon.height {
-          return iconWidth >= width  && iconHeight >= height;
+          return iconWidth >= width && iconHeight >= height
         } else { return true; }
       }
     }
-    return chooseIcon(filteredIcons, width: 0, height: 0);
-    
+    return chooseIcon(filteredIcons, width: 0, height: 0)
   }
     // MARK: Test hooks
 
     typealias URLSessionProvider = () -> URLSession
+
     @objc static var urlSessionProvider: URLSessionProvider = FavIcon.createDefaultURLSession
 
     // MARK: Internal
 
-    @objc static func createDefaultURLSession() -> URLSession {
+    @objc
+    static func createDefaultURLSession() -> URLSession {
         return URLSession.shared
     }
 
@@ -295,12 +304,12 @@ public enum IconDownloadResult {
     /// - returns: The chosen icon, or `nil`, if `icons` is empty.
     static func chooseIcon(_ icons: [DetectedIcon], width: Int? = nil, height: Int? = nil) -> DetectedIcon? {
         guard icons.count > 0 else { return nil }
-      
+
         let iconsInPreferredOrder = icons.sorted { left, right in
-            if width! > 0 || height! > 0  {
+            if width! > 0 || height! > 0 {
                 let preferredWidth = width, preferredHeight = height,
                 widthLeft = left.width, heightLeft = left.height,
-                widthRight = right.width, heightRight = right.height;
+                widthRight = right.width, heightRight = right.height
                 // Which is closest to preferred size?
                 let deltaA = abs(widthLeft! - preferredWidth!) * abs(heightLeft! - preferredHeight!)
                 let deltaB = abs(widthRight! - preferredWidth!) * abs(heightRight! - preferredHeight!)
@@ -328,7 +337,7 @@ public enum IconDownloadResult {
         return iconsInPreferredOrder.first!
     }
 
-    fileprivate override init () {
+    private override init () {
     }
 }
 
@@ -352,7 +361,8 @@ extension FavIcon {
     /// - parameter completion: A closure to call when the scan has completed. The closure will be called
     ///                         on the main queue.
     /// - throws: An `IconError` if the scan failed for some reason.
-    @objc public static func scan(_ url: String, completion: @escaping ([DetectedIcon], [String:String]) -> Void) throws {
+    @objc
+    public static func scan(_ url: String, completion: @escaping ([DetectedIcon], [String: String]) -> Void) throws {
         guard let url = URL(string: url) else { throw IconError.invalidBaseURL }
         scan(url, completion: completion)
     }
@@ -364,7 +374,8 @@ extension FavIcon {
     /// - parameter completion: A closure to call when all download tasks have results available
     ///                         (successful or otherwise). The closure will be called on the main queue.
     /// - throws: An `IconError` if the scan or download failed for some reason.
-    @objc public static func downloadAll(_ url: String, completion: @escaping ([ImageType]) -> Void) throws {
+    @objc
+    public static func downloadAll(_ url: String, completion: @escaping ([ImageType]) -> Void) throws {
         guard let url = URL(string: url) else { throw IconError.invalidBaseURL }
         downloadAll(url, completion: completion)
     }
@@ -378,7 +389,8 @@ extension FavIcon {
     /// - parameter completion: A closure to call when the download task has produced a result. The closure will
     ///                         be called on the main queue.
     /// - throws: An appropriate `IconError` if downloading failed for some reason.
-    @objc public static func downloadPreferred(_ url: String,
+    @objc
+    public static func downloadPreferred(_ url: String,
                                          width: Int,
                                          height: Int,
                                          completion: @escaping (ImageType?) -> Void) throws {
@@ -396,5 +408,3 @@ extension DetectedIcon {
         return nil
     }
 }
-
-

@@ -15,17 +15,16 @@
 // limitations under the License.
 //
 
-import XCTest
 @testable import FavIcon
+import XCTest
 
 #if os(iOS)
-import UIKit
+    import UIKit
 #elseif os(OSX)
-import Cocoa
+    import Cocoa
 #endif
 
 // swiftlint:disable function_body_length
-// swiftlint:disable line_length
 
 class FavIconTests: XCTestCase {
     func testScan() {
@@ -33,7 +32,7 @@ class FavIconTests: XCTestCase {
 
         performWebRequest(name: "scan") { requestCompleted in
             do {
-                try FavIcon.scan("https://apple.com") { icons, meta in
+                try FavIcon.scan("https://apple.com") { icons, _ in
                     actualIcons = icons
                     requestCompleted()
                 }
@@ -66,10 +65,8 @@ class FavIconTests: XCTestCase {
         case .success(let image):
             XCTAssertEqual(32, image.size.width)
             XCTAssertEqual(32, image.size.height)
-            break
         case .failure(let error):
             XCTFail("unexpected error returned for download: \(error)")
-            break
         }
     }
 
@@ -314,4 +311,3 @@ private extension XCTestCase {
 }
 
 // swiftlint:enable function_body_length
-// swiftlint:enable line_length

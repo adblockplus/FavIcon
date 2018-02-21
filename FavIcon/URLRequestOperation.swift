@@ -61,11 +61,12 @@ class URLRequestOperation: Operation {
     @objc var urlRequest: URLRequest
     var result: URLResult?
 
-    fileprivate var task: URLSessionDataTask?
-    fileprivate let session: URLSession
-    fileprivate var semaphore: DispatchSemaphore?
+    private var task: URLSessionDataTask?
+    private let session: URLSession
+    private var semaphore: DispatchSemaphore?
 
-    @objc init(url: URL, session: URLSession) {
+    @objc
+    init(url: URL, session: URLSession) {
         self.session = session
         self.urlRequest = URLRequest(url: url)
         self.semaphore = nil
@@ -86,14 +87,15 @@ class URLRequestOperation: Operation {
         }
     }
 
-    @objc func prepareRequest() {
+    @objc
+    func prepareRequest() {
     }
 
     func processResult(_ data: Data?, response: HTTPURLResponse, completion: @escaping (URLResult) -> Void) {
         fatalError("must override processResult()")
     }
 
-    fileprivate func dataTaskCompletion(_ data: Data?, response: URLResponse?, error: Error?) {
+    private func dataTaskCompletion(_ data: Data?, response: URLResponse?, error: Error?) {
         guard error == nil else {
             result = .failed(error: error!)
             self.notifyFinished()
@@ -126,7 +128,7 @@ class URLRequestOperation: Operation {
         }
     }
 
-    fileprivate func notifyFinished() {
+    private func notifyFinished() {
         if let semaphore = self.semaphore {
             semaphore.signal()
         }

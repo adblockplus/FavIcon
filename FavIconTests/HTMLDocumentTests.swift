@@ -15,8 +15,8 @@
 // limitations under the License.
 //
 
-import XCTest
 @testable import FavIcon
+import XCTest
 
 class HTMLDocumentTests: XCTestCase {
     func testHTMLFragment() {

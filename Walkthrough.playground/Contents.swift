@@ -56,25 +56,7 @@ FavIcon.scan(URL(string: "https://google.com")!) { icons in
         }
     }
 }
-
-
-
-
 //: That's it. Good luck, have fun!
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //: You don't actually need the next two lines when you're using this library, they're just here so
 //: that network requests get a chance to execute when inside a playground.
 import PlaygroundSupport
