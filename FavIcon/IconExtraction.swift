@@ -14,7 +14,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 import FavIcon.XMLDocument
 
 /// Represents an icon size.
@@ -26,7 +25,6 @@ struct IconSize: Hashable, Equatable {
     static func == (lhs: IconSize, rhs: IconSize) -> Bool {
         return lhs.width == rhs.width && lhs.height == rhs.height
     }
-
     /// The width of the icon.
     let width: Int
     /// The height of the icon.
@@ -49,18 +47,13 @@ private let kMicrosoftSizeMap: [String: IconSize] = [
     "msapplication-square310x310logo": IconSize(width: 310, height: 310)
 ]
 
-private let siteImage: [String: IconSize] = [
-    "og:image": IconSize(width: 1024, height: 512),
-    "twitter:image": IconSize(width: 1024, height: 512)
-]
-
+// swiftlint:disable function_body_length
+// swiftlint:disable cyclomatic_complexity
 /// Extracts a list of icons from the `<head>` section of an HTML document.
 ///
 /// - parameter document: An HTML document to process.
 /// - parameter baseURL: A base URL to combine with any relative image paths.
 /// - parameter returns: An array of `DetectedIcon` structures.
-// swiftlint:disable function_body_length
-// swiftlint:disable cyclomatic_complexity
 func examineHTMLMeta(_ document: HTMLDocument, baseURL: URL) -> [String: String] {
     var resp: [String: String] = [:]
     for meta in document.query("/html/head/meta") {
@@ -87,13 +80,11 @@ func examineHTMLMeta(_ document: HTMLDocument, baseURL: URL) -> [String: String]
             resp["description"] = resp["description"] ?? content
         }
     }
-
     for title in document.query("/html/head/title") {
         if let titleString = title.contents {
             resp["title"] = resp["title"] ?? titleString
         }
     }
-
     for link in document.query("/html/head/link") {
         if let rel = link.attributes["rel"],
             let href = link.attributes["href"],
@@ -122,7 +113,6 @@ func examineHTMLMeta(_ document: HTMLDocument, baseURL: URL) -> [String: String]
 
 func extractHTMLHeadIcons(_ document: HTMLDocument, baseURL: URL) -> [DetectedIcon] {
     var icons: [DetectedIcon] = []
-
     for link in document.query("/html/head/link") {
         if let rel = link.attributes["rel"],
             let href = link.attributes["href"],
@@ -168,7 +158,6 @@ func extractHTMLHeadIcons(_ document: HTMLDocument, baseURL: URL) -> [DetectedIc
             }
         }
     }
-
     for meta in document.query("/html/head/meta") {
         if let name = meta.attributes["name"]?.lowercased(),
             let content = meta.attributes["content"],
@@ -178,23 +167,13 @@ func extractHTMLHeadIcons(_ document: HTMLDocument, baseURL: URL) -> [DetectedIc
                                       type: .microsoftPinnedSite,
                                       width: size.width,
                                       height: size.height))
-        } else if
-            let property = meta.attributes["property"]?.lowercased(),
-            let content = meta.attributes["content"],
-            let url = URL(string: content, relativeTo: baseURL),
-            let size = siteImage[property] {
-                icons.append(DetectedIcon(url: url,
-                                          type: .FBImage,
-                                          width: size.width,
-                                          height: size.height))
         }
     }
-
     return icons
 }
+
 // swiftlint:enable cyclomatic_complexity
 // swiftlint:enable function_body_length
-
 /// Extracts a list of icons from a Web Application Manifest file
 ///
 /// - parameter jsonString: A JSON string containing the contents of the manifest file.
@@ -202,7 +181,6 @@ func extractHTMLHeadIcons(_ document: HTMLDocument, baseURL: URL) -> [DetectedIc
 /// - returns: An array of `DetectedIcon` structures.
 func extractManifestJSONIcons(_ jsonString: String, baseURL: URL) -> [DetectedIcon] {
     var icons: [DetectedIcon] = []
-
     if let data = jsonString.data(using: String.Encoding.utf8),
         let object = try? JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions()),
         let manifest = object as? NSDictionary,
@@ -225,7 +203,6 @@ func extractManifestJSONIcons(_ jsonString: String, baseURL: URL) -> [DetectedIc
             }
         }
     }
-
     return icons
 }
 
@@ -236,7 +213,6 @@ func extractManifestJSONIcons(_ jsonString: String, baseURL: URL) -> [DetectedIc
 /// - returns: An array of `DetectedIcon` structures.
 func extractBrowserConfigXMLIcons(_ document: LBXMLDocument, baseURL: URL) -> [DetectedIcon] {
     var icons: [DetectedIcon] = []
-
     for tile in document.query("/browserconfig/msapplication/tile/*") {
         if let src = tile.attributes["src"],
             let url = URL(string: src, relativeTo: baseURL)?.absoluteURL {
@@ -256,7 +232,6 @@ func extractBrowserConfigXMLIcons(_ document: LBXMLDocument, baseURL: URL) -> [D
             }
         }
     }
-
     return icons
 }
 
