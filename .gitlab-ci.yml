@@ -1,0 +1,12 @@
+stages:
+  - build
+
+build_code:
+  stage: build
+  script:
+    - set -o pipefail && xcodebuild clean test -project FavIcon.xcodeproj -scheme FavIcon-iOS -destination 'platform=iOS Simulator,name=iPhone X,OS=11.3'
+    - set -o pipefail && xcodebuild clean test -project FavIcon.xcodeproj -scheme FavIcon-iOS -destination 'platform=iOS Simulator,name=iPhone SE,OS=10.3.1'
+    - set -o pipefail && xcodebuild clean test -project FavIcon.xcodeproj -scheme FavIcon-iOS -destination 'platform=iOS Simulator,name=iPhone 6s Plus,OS=9.3'
+    - set -o pipefail && xcodebuild clean test -project FavIcon.xcodeproj -scheme FavIcon-OSX -destination 'platform=OS X,arch=x86_64'
+  tags:
+    - ios,favicon
