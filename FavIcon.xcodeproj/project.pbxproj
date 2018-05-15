@@ -397,11 +397,11 @@
 					};
 					2E1852391BDAE5300065F877 = {
 						CreatedOnToolsVersion = 7.1;
-						LastSwiftMigration = 0810;
+						LastSwiftMigration = 0930;
 					};
 					2E1852421BDAE5300065F877 = {
 						CreatedOnToolsVersion = 7.1;
-						LastSwiftMigration = 0810;
+						LastSwiftMigration = 0930;
 					};
 				};
 			};
@@ -766,7 +766,8 @@
 				PRODUCT_NAME = FavIcon;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -791,7 +792,8 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
@@ -811,7 +813,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.bitserf.FavIconTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -832,7 +835,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
